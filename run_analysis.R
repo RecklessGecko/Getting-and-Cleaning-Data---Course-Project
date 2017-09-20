@@ -44,3 +44,39 @@ unzip(zipfile="./data/Dataset.zip",exdir="./data")
       mrg_train <- cbind(y_train, subject_train, x_train)
       mrg_test <- cbind(y_test, subject_test, x_test)
       setAllInOne <- rbind(mrg_train, mrg_test)
+
+    
+# 2. Extract only the measurements on the mean and standard deviation for each measurement
+  
+  # 2.1 Read column names:
+      colNames <- colnames(setAllInOne)
+      
+  # 2.2 Create vector for defining ID, mean and standard deviation:
+      mean_and_std <- (grepl("activityId" , colNames) | 
+                       grepl("subjectId" , colNames) | 
+                       grepl("mean.." , colNames) | 
+                       grepl("std.." , colNames) 
+                      )
+      
+  # 2.3 Make nessesary subset from setAllInOne:
+      setForMeanAndStd <- setAllInOne[ , mean_and_std == TRUE]
+     
+     
+# 3. Use descriptive activity names to name the activities in the data set:
+      setWithActivityNames <- merge(setForMeanAndStd, activityLabels,
+                                   by='activityId',
+                                   all.x=TRUE)
+     
+     
+# 4. Appropriately label the data set with descriptive variable names.
+      # This step was made in previos steps =) See 1.3, 2.2, 2.3.
+     
+     
+# 5. Create a second, independent tidy data set with the average of each variable for each activity and each subject:
+      
+      # 5.1 Make the second tidy data set 
+      secTidySet <- aggregate(. ~subjectId + activityId, setWithActivityNames, mean)
+      secTidySet <- secTidySet[order(secTidySet$subjectId, secTidySet$activityId),]
+      
+      # 5.2 Write the second tidy data set in txt file
+      write.table(secTidySet, "secTidySet.txt", row.name=FALSE)
